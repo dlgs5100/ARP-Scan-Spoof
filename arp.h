@@ -24,14 +24,6 @@ struct arp_packet
 	struct ether_arp arp;
 };
 
-struct option long_options[] = {
-	{"help", 0, NULL, 'h'},
-	{"list", 1, NULL, 'l'},
-	{0, 0, 0, 0},
-};
-char *l_opt_arg;
-char* const short_options = "hl:";
-
 void print_usage();
 
 
@@ -50,4 +42,9 @@ char* get_target_protocol_addr(struct ether_arp *packet);
 char* get_sender_protocol_addr(struct ether_arp *packet); 
 char* get_sender_hardware_addr(struct ether_arp *packet); 
 char* get_target_hardware_addr(struct ether_arp *packet); 
+
+char* get_locol_IP();
+char* get_local_MAC();
+
+void printHelp();
 #endif

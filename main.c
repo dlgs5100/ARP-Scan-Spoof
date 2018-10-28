@@ -12,6 +12,13 @@
  * You have to open two socket to handle this program.
  * One for input , the other for output.
  */
+struct option long_options[] = {
+	{"help", 0, NULL, 'h'},
+	{"list", 1, NULL, 'l'},
+	{0, 0, 0, 0},
+};
+char *l_opt_arg;
+char* const short_options = "hl:";
 
 void printHelp();
 int main(int argc, char* argv[])
@@ -21,49 +28,74 @@ int main(int argc, char* argv[])
 	// struct ifreq req;
 	// struct in_addr myip;
 	int recvlen;
-	struct arp_packet pak;
 	//u_int8_t arrARP[1500];
-	char target_addr[16];
+	char sender_addr[16], target_addr[16];
 	
 	if(geteuid() != 0)
 		printf("ERROR: You must be root to use this tool!\n");
 	else{
 		char c;
 		while((c = getopt_long (argc, argv, short_options, long_options, NULL)) != -1){
+			printf("[ ARP sniffer and spoof program ]\n");
 			switch(c){
 				case'h':
 					printHelp();
 					break;
 				case'l':
+					printf("### ARP sniffer mode ###\n");
 					if((sockfd_recv = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ARP))) < 0)
 					{
 						perror("open recv socket error");
 						exit(1);
 					}
-
+					struct arp_packet rcv_pak;
 					if(strcmp(optarg, "-a") == 0){
 						while(1){
-							if((recvlen = recvfrom( sockfd_recv, (void *)&pak, sizeof(struct arp_packet), 0, NULL, NULL))<0)//change arp_packet
+							if((recvlen = recvfrom( sockfd_recv, (void *)&rcv_pak, sizeof(struct arp_packet), 0, NULL, NULL))<0)
 							{	
 								perror("recvfrom");
 								exit(1);
 							}
-							//memcpy(arrARP, (void *)&pak, sizeof(struct arp_packet));//copy struct arp_packet into arp_packet array
 
-							// struct in_addr addr1;
-							// memcpy(&addr1, &pak.arp.arp_tpa, 4);
-							// printf("%s\n", inet_ntoa(addr1));
-							
-							//strcpy(sender_addr, get_sender_protocol_addr(&(pak.arp)));
-							strcpy(target_addr, get_target_protocol_addr(&(pak.arp)));	
-							printf("%s\n", target_addr);		
-							
+							strcpy(target_addr, get_target_protocol_addr(&(rcv_pak.arp)));	
+							strcpy(sender_addr, get_sender_protocol_addr(&(rcv_pak.arp)));
+							printf("Get ARP packet - Who has %s ?\t Tell %s\n", sender_addr, target_addr);		
 						}
 					}
 					else{
+						while(1){
+							if((recvlen = recvfrom( sockfd_recv, (void *)&rcv_pak, sizeof(struct arp_packet), 0, NULL, NULL))<0)
+							{	
+								perror("recvfrom");
+								exit(1);
+							}
 
+							strcpy(target_addr, get_target_protocol_addr(&(rcv_pak.arp)));	
+							strcpy(sender_addr, get_sender_protocol_addr(&(rcv_pak.arp)));
+							if(strcmp(optarg, sender_addr) == 0)
+								printf("Get ARP packet - Who has %s ?\t Tell %s\n", sender_addr, target_addr);		
+						}
 					}
 					break;
+				case'q':
+					printf("### ARP query mode ###\n");
+					if((sockfd_send = socket(PF_PACKET, SOCK_PACKET, htons(ETH_P_RARP))) < 0)
+					{
+							perror("socket error");
+							exit(1);
+					}
+					struct arp_packet *snd_pak = (struct arp_packet *)malloc(sizeof(struct arp_packet));
+					set_hard_type(&(snd_pak->arp), htons(ARPHRD_ETHER));
+					set_prot_type(&(snd_pak->arp), htons(ETHERTYPE_IP));
+					set_hard_size(&(snd_pak->arp), ETH_ALEN);
+					set_prot_size(&(snd_pak->arp), 4);
+					set_op_code(&(snd_pak->arp), htons(2));
+
+					
+
+					break;
+				default:
+					printf("Unexist option\n");
 			}
 		}
 	}
@@ -98,13 +130,4 @@ int main(int argc, char* argv[])
 
 
 	return 0;
-}
-
-void printHelp(){
-	printf("[ ARF sniffer and spoof program]\n");
-	printf("Format :\n");
-	printf("1) ./arp -l -a\n");
-	printf("2) ./arp -l <filter_ip_address>\n");
-	printf("3) ./arp -q <query_ip_address>\n");
-	printf("4) ./arp <fake_mac_address> <target_ip_address>\n");
 }
