@@ -5,6 +5,8 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <netinet/if_ether.h>
+#include <net/if_arp.h>
+#include <netinet/ether.h>
 #include <netpacket/packet.h>
 #include <net/ethernet.h>
 #include <net/if.h>
@@ -26,6 +28,8 @@ struct arp_packet
 
 void print_usage();
 
+void set_ether_dst_addr(struct ether_header *packet, char *address);
+void set_ether_src_addr(struct ether_header *packet, char *address);
 
 void set_hard_type(struct ether_arp *packet, unsigned short int type);
 void set_prot_type(struct ether_arp *packet, unsigned short int type);
