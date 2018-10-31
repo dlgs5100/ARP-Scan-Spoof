@@ -71,7 +71,7 @@ char* get_sender_hardware_addr(struct ether_arp *packet)
 	char *MAC = malloc(sizeof(char)*18);
 	memcpy(&sender_mac, packet->arp_sha, 6);
 	ether_ntoa_r(&sender_mac ,MAC);
-	return MAC;//reture an memory address
+	return MAC;
 }
 char* get_target_hardware_addr(struct ether_arp *packet)
 {
@@ -79,7 +79,7 @@ char* get_target_hardware_addr(struct ether_arp *packet)
 	char *MAC = malloc(sizeof(char)*18);
 	memcpy(&target_mac, packet->arp_tha, 6);
 	ether_ntoa_r(&target_mac ,MAC);
-	return MAC;//reture an memory address
+	return MAC;
 }
 char* get_locol_IP(){
 	int fd;
