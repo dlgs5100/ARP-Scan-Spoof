@@ -12,16 +12,7 @@
  * You have to open two socket to handle this program.
  * One for input , the other for output.
  */
-struct option long_options[] = {
-	{"help", 0, NULL, 'h'},
-	{"query", 1, NULL, 'q'},
-	{"list", 1, NULL, 'l'},
-	{0, 0, 0, 0},
-};
-char *l_opt_arg;
-char* const short_options = "hq:l:";
 
-void printHelp();
 int main(int argc, char* argv[]){
 	int sockfd_recv = 0, sockfd_send = 0;
 	struct sockaddr sa;

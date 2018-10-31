@@ -18,15 +18,12 @@
 #include <string.h>
 #include <error.h>
 #include <unistd.h>
-#include <getopt.h>
 
 struct arp_packet
 {
 	struct ether_header eth_hdr;
 	struct ether_arp arp;
 };
-
-void print_usage();
 
 void set_ether_dst_addr(struct ether_header *packet, char *address);
 void set_ether_src_addr(struct ether_header *packet, char *address);
