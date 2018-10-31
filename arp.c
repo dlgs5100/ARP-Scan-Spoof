@@ -4,13 +4,13 @@ void set_ether_dst_addr(struct ether_header *packet, char *address){
 	struct ether_addr dst_addr;
 	ether_aton_r(address, &dst_addr);
 	memcpy(packet->ether_dhost, &dst_addr, ETH_ALEN);
-	printf("%s\n", address);
+	// printf("%s\n", address);
 }
 void set_ether_src_addr(struct ether_header *packet, char *address){
 	struct ether_addr src_addr;
 	ether_aton_r(address, &src_addr);
 	memcpy(packet->ether_shost, &src_addr, ETH_ALEN);
-	printf("%s\n", address);
+	// printf("%s\n", address);
 }
 
 void set_hard_type(struct ether_arp *packet, unsigned short int type){
@@ -30,20 +30,29 @@ void set_op_code(struct ether_arp *packet, short int code){
 }
 
 void set_sender_hardware_addr(struct ether_arp *packet, char *address){
-	memcpy(packet->arp_sha, address, ETH_ALEN);
-	printf("%s\n", address);
+	struct ether_addr snd_addr;
+	ether_aton_r(address, &snd_addr);
+	memcpy(packet->arp_sha, &snd_addr, ETH_ALEN);
+	// printf("%s\n", address);
 }
 void set_sender_protocol_addr(struct ether_arp *packet, char *address){
-	memcpy(packet->arp_spa, address, 4);
-	printf("%s\n", address);
+
+	in_addr_t snd_ip;
+	snd_ip = inet_addr(address);
+	memcpy(packet->arp_spa, &snd_ip, packet->ea_hdr.ar_pln);
+	// printf("%s\n", address);
 }
 void set_target_hardware_addr(struct ether_arp *packet, char *address){
-	memcpy(packet->arp_tha, address, ETH_ALEN);
-	printf("%s\n", address);
+	struct ether_addr trg_addr;
+	ether_aton_r(address, &trg_addr);
+	memcpy(packet->arp_tha, &trg_addr, ETH_ALEN);
+	// printf("%s\n", address);
 }
 void set_target_protocol_addr(struct ether_arp *packet, char *address){
-	memcpy(packet->arp_tpa, address, 4);
-	printf("%s\n", address);
+	in_addr_t trg_ip;
+	trg_ip = inet_addr(address);
+	memcpy(packet->arp_tpa, &trg_ip, packet->ea_hdr.ar_pln);
+	// printf("%s\n", address);
 }
 
 char* get_target_protocol_addr(struct ether_arp *packet){
@@ -56,10 +65,14 @@ char* get_sender_protocol_addr(struct ether_arp *packet){
 	memcpy(&sender_addr, packet->arp_spa, 4);
 	return inet_ntoa(sender_addr);
 }
-// char* get_sender_hardware_addr(struct ether_arp *packet)
-// {
-// 	// if you use malloc, remember to free it.
-// }
+char* get_sender_hardware_addr(struct ether_arp *packet)
+{
+	struct ether_addr sender_mac;
+	char *MAC = malloc(sizeof(char)*18);
+	memcpy(&sender_mac, packet->arp_sha, 6);
+	ether_ntoa_r(&sender_mac ,MAC);
+	return MAC;//reture an memory address
+}
 char* get_target_hardware_addr(struct ether_arp *packet)
 {
 	struct ether_addr target_mac;

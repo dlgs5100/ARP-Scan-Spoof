@@ -89,7 +89,7 @@ int main(int argc, char* argv[]){
 					}
 					struct arp_packet *snd_pak = (struct arp_packet *)malloc(sizeof(struct arp_packet));
 
-					set_ether_dst_addr(&(snd_pak->eth_hdr), "52:54:00:12:35:02");
+					set_ether_dst_addr(&(snd_pak->eth_hdr), "ff:ff:ff:ff:ff:ff");
 					set_ether_src_addr(&(snd_pak->eth_hdr), get_local_MAC());
 					//printf("ABD: %d", htons(ETHERTYPE_ARP));
 					snd_pak->eth_hdr.ether_type = htons(ETHERTYPE_ARP);
@@ -100,10 +100,10 @@ int main(int argc, char* argv[]){
 					set_prot_size(&(snd_pak->arp), 4);
 					set_op_code(&(snd_pak->arp), htons(1));
 
-					set_sender_hardware_addr(&(snd_pak->arp), "\0");
-					set_sender_protocol_addr(&(snd_pak->arp), optarg);
-					set_target_hardware_addr(&(snd_pak->arp), get_local_MAC());
-					set_target_protocol_addr(&(snd_pak->arp), get_locol_IP());
+					set_sender_hardware_addr(&(snd_pak->arp), get_local_MAC());
+					set_sender_protocol_addr(&(snd_pak->arp), get_locol_IP());
+					set_target_hardware_addr(&(snd_pak->arp), "00:00:00:00:00:00");
+					set_target_protocol_addr(&(snd_pak->arp), optarg);
 					
 					bzero(&sa, sizeof(sa));
 					sa.sa_family = PF_PACKET;
@@ -115,24 +115,22 @@ int main(int argc, char* argv[]){
 						exit(1);
 					}
 
-					
-
-					// struct arp_packet rcv_pak;
-					// if((sockfd_recv = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ARP))) < 0)
-					// {
-					// 	perror("open recv socket error");
-					// 	exit(1);
-					// }
-					// if((recvlen = recvfrom( sockfd_recv, (void *)&rcv_pak, sizeof(struct arp_packet), 0, NULL, NULL))<0)
-					// {	
-					// 	perror("recvfrom");
-					// 	exit(1);
-					// }
-					// //?
-					// strcpy(target_addr, get_target_protocol_addr(&(rcv_pak.arp)));	
-					// strcpy(target_MAC, get_target_hardware_addr(&(rcv_pak.arp)));
-					// printf("MAC address of %s is %s\n", target_addr, target_MAC);
-					// fflush(stdout);
+					struct arp_packet rcv_pak;
+					if((sockfd_recv = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ARP))) < 0)
+					{
+						perror("open recv socket error");
+						exit(1);
+					}
+					if((recvlen = recvfrom( sockfd_recv, (void *)&rcv_pak, sizeof(struct arp_packet), 0, NULL, NULL))<0)
+					{	
+						perror("recvfrom");
+						exit(1);
+					}
+					//?
+					strcpy(target_addr, get_sender_protocol_addr(&(rcv_pak.arp)));	
+					strcpy(target_MAC, get_sender_hardware_addr(&(rcv_pak.arp)));
+					printf("MAC address of %s is %s\n", target_addr, target_MAC);
+					fflush(stdout);
 					break;
 				default:
 					printf("Unexist option\n");
